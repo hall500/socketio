@@ -10,9 +10,11 @@ const mongo       = require('mongodb').MongoClient;
 const passport    = require('passport');
 const cookieParser= require('cookie-parser')
 const app         = express();
+const cors = require('cors');
+app.use(cors());
 const http        = require('http').Server(app);
 const sessionStore= new session.MemoryStore();
-
+const io = require('socket.io')(http);
 
 fccTesting(app); //For FCC testing purposes
 
@@ -31,7 +33,8 @@ app.use(session({
 }));
 
 
-mongo.connect(process.env.DATABASE, (err, db) => {
+mongo.connect(process.env.DATABASE, (err, dbo) => {
+    const db = dbo.db("socketio");
     if(err) console.log('Database error: ' + err);
   
     auth(app, db);
@@ -41,7 +44,9 @@ mongo.connect(process.env.DATABASE, (err, db) => {
 
   
     //start socket.io code  
-
+    io.on("connection", socket => {
+      console.log('A user has connected');
+    });
   
 
     //end socket.io code
